@@ -1,3 +1,21 @@
+/*
+ * logger.c - Logging process of the multi-process simulator
+ *
+ * Receives log lines from Core, writes them to files and confirms each one.
+ *
+ *   Core --/pbl_core_logger--> Logger
+ *   Core <--/pbl_logger_core-- Logger   (ACKs)
+ *
+ * Output files (in the current directory):
+ *   cpu_log.txt    every message received (execution log)
+ *   error_log.txt  only messages that start with "[ERROR]" (error log)
+ *
+ * START ORDER:  Logger  ->  Core  ->  UI
+ *   The Logger creates both of its queues, so it must start first.
+ *   It removes them again when it exits (EXIT message, Ctrl+C or SIGTERM).
+ *
+ * Build:  gcc -Wall -Wextra -o logger logger.c -lrt
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
