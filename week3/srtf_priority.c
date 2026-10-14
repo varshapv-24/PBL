@@ -1,5 +1,5 @@
 /*
- * srtf_priority.c  --  Member 2
+ * srtf_priority.c 
  *
  * Preemptive scheduling algorithms for the CPU Scheduling Simulator:
  *   - srtf()       : Shortest Remaining Time First (preemptive SJF)
