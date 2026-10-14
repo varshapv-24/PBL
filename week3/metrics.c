@@ -1,5 +1,5 @@
 /*
- * metrics.c  --  Leader's file
+ * metrics.c  
  *
  * calculate_metrics() : fills WT / TAT / RT for every process and the
  *                       averages + CPU utilization for the whole run
