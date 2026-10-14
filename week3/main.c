@@ -1,5 +1,5 @@
 /*
- * main.c  
+ * main.c  --  Leader's file
  *
  * Input, menu, and running the chosen scheduling algorithm.
  */
@@ -159,6 +159,72 @@ static void run_algorithm(int choice, const Process input[], int n)
 }
 
 /* ------------------------------------------------------------------ */
+/* Startup integration check                                           */
+/* ------------------------------------------------------------------ */
+
+typedef void (*PlainAlgo)(Process[], int, GanttChart *);
+
+/* Round Robin needs a quantum, so wrap it with a fixed one for the check */
+static void rr_quantum2(Process p[], int n, GanttChart *g)
+{
+    round_robin(p, n, 2, g);
+}
+
+static int completion_of(const Process p[], int n, int pid)
+{
+    for (int i = 0; i < n; i++)
+        if (p[i].pid == pid)
+            return p[i].completion_time;
+    return -1;
+}
+
+/*
+ * Runs every algorithm on one small built-in example whose answers are
+ * known (worked out by hand) and compares the completion times of P1, P2
+ * and P3. Returns how many algorithms gave a wrong answer.
+ * If this passes, all the modules are linked together and working.
+ */
+static int integration_check(void)
+{
+    static const Process base[3] = {
+        { .pid = 1, .arrival_time = 0, .burst_time = 5, .priority = 1 },
+        { .pid = 2, .arrival_time = 1, .burst_time = 3, .priority = 2 },
+        { .pid = 3, .arrival_time = 2, .burst_time = 1, .priority = 3 },
+    };
+    static const struct {
+        const char *name;
+        PlainAlgo run;
+        int expected[3];            /* completion times of P1, P2, P3 */
+    } tests[] = {
+        { "FCFS",                      fcfs,        { 5, 8, 9 } },
+        { "SJF",                       sjf,         { 5, 9, 6 } },
+        { "SRTF",                      srtf,        { 9, 5, 3 } },
+        { "Priority (non-preemptive)", priority_np, { 5, 8, 9 } },
+        { "Priority (preemptive)",     priority_p,  { 5, 8, 9 } },
+        { "Round Robin",               rr_quantum2, { 9, 8, 5 } },
+    };
+    const int count = (int)(sizeof tests / sizeof tests[0]);
+    int failed = 0;
+
+    for (int k = 0; k < count; k++) {
+        Process work[3];
+        GanttChart g;
+
+        memcpy(work, base, sizeof work);
+        tests[k].run(work, 3, &g);
+
+        for (int i = 0; i < 3; i++) {
+            if (completion_of(work, 3, i + 1) != tests[k].expected[i]) {
+                printf("  Integration check FAILED: %s\n", tests[k].name);
+                failed++;
+                break;
+            }
+        }
+    }
+    return failed;
+}
+
+/* ------------------------------------------------------------------ */
 /* Menu                                                                */
 /* ------------------------------------------------------------------ */
 
@@ -185,6 +251,12 @@ int main(void)
 {
     Process procs[MAX_PROCESSES];
     int n = 0;
+
+    if (integration_check() == 0)
+        printf("Integration check passed: all 6 scheduling algorithms are "
+               "linked and working.\n");
+    else
+        printf("Integration check failed: see the messages above.\n");
 
     for (;;) {
         print_menu(n);
