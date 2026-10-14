@@ -15,7 +15,7 @@
 #define SCHEDULER_H
 
 #define MAX_PROCESSES 50
-#define MAX_BLOCKS    1000   /* max Gantt blocks for one run */
+#define MAX_BLOCKS    5000   /* max Gantt blocks for one run */
 #define IDLE_PID      -1     /* pid used for CPU idle blocks */
 
 /* ------------------------------------------------------------------ */
@@ -51,6 +51,7 @@ typedef struct {
 typedef struct {
     GanttBlock blocks[MAX_BLOCKS];
     int count;
+    int overflow;          /* 1 if blocks were dropped (chart too long) */
 } GanttChart;
 
 /* Overall results for one algorithm run */
@@ -71,6 +72,7 @@ typedef struct {
 static inline void gantt_init(GanttChart *g)
 {
     g->count = 0;
+    g->overflow = 0;
 }
 
 /*
@@ -96,6 +98,8 @@ static inline void gantt_add(GanttChart *g, int pid, int start, int end)
         g->blocks[g->count].start = start;
         g->blocks[g->count].end   = end;
         g->count++;
+    } else {
+        g->overflow = 1;   /* chart full: remember that blocks were lost */
     }
 }
 
