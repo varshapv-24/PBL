@@ -1,5 +1,5 @@
 /*
- * main.c  --  Leader's file
+ * main.c  
  *
  * Input, menu, and running the chosen scheduling algorithm.
  */
