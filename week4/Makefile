@@ -1,25 +1,22 @@
-# OWNER: Member 2 - run all commands from this folder
-CC     = gcc
-CFLAGS = -Wall -Wextra -g -Imember1_logic
-L      = member1_logic
+CC=gcc
+CFLAGS=-Wall -Wextra -g -std=c11
 
-all: server
+all: server test_main test_edge
 
-test: $(L)/test_main.c $(L)/deadlock.c $(L)/deadlock.h
-	$(CC) $(CFLAGS) -o test_console $(L)/test_main.c $(L)/deadlock.c
-	./test_console
+server: server.c deadlock.c deadlock.h
+	$(CC) $(CFLAGS) -o server server.c deadlock.c
 
-test-edge: $(L)/test_edge.c $(L)/deadlock.c $(L)/deadlock.h
-	$(CC) $(CFLAGS) -o test_edge $(L)/test_edge.c $(L)/deadlock.c
+test_main: test_main.c deadlock.c deadlock.h
+	$(CC) $(CFLAGS) -o test_main test_main.c deadlock.c
+
+test_edge: test_edge.c deadlock.c deadlock.h
+	$(CC) $(CFLAGS) -o test_edge test_edge.c deadlock.c
+
+test: test_main test_edge
+	./test_main
 	./test_edge
 
-tests: test test-edge
-
-server: member2_backend/server.c $(L)/deadlock.c $(L)/deadlock.h
-	$(CC) $(CFLAGS) -o server member2_backend/server.c $(L)/deadlock.c
-
-run: server
-	./server 8080
-
 clean:
-	rm -f test_console test_edge server
+	rm -f server test_main test_edge
+
+.PHONY: all test clean
