@@ -1,0 +1,25 @@
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,sans-serif;background:#f3f5f9;color:#1c2330}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:#1f2a44;color:#fff}
+h1{margin:0;font-size:1.3rem}h2{margin:0 0 10px;font-size:1.05rem}h3{margin:8px 0 4px;font-size:.9rem}
+main{max-width:1000px;margin:18px auto;padding:0 14px;display:grid;gap:14px}
+.card{background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 4px #0002}
+.row{margin:8px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.badge{padding:6px 14px;border-radius:20px;font-weight:700;background:#888}
+.badge.ok{background:#2e7d32}.badge.warn{background:#f9a825;color:#000}.badge.bad{background:#c62828}
+button{padding:7px 12px;border:1px solid #9aa5bd;border-radius:6px;background:#fff;cursor:pointer}
+button:hover{background:#eef2fb}button.primary{background:#2f5bea;border-color:#2f5bea;color:#fff}
+input[type=number]{width:56px;padding:5px;margin:0 6px 0 3px}select{padding:6px}
+.gb,.tb{display:inline-block;vertical-align:top;margin:0 18px 8px 0}
+table{border-collapse:collapse}th,td{padding:2px 4px;font-size:.85rem;text-align:center}th{color:#667}
+tr.dead td,tr.dead th{color:#bbb;text-decoration:line-through}tr.dl td{background:#ffd7d7}
+.chip{display:inline-block;padding:3px 9px;margin:2px;border-radius:12px;background:#dff3e2;font-weight:600}
+.bar{display:flex;align-items:center;gap:8px;margin:3px 0;font-size:.85rem}
+.bar div{flex:0 0 220px;height:10px;background:#e3e8f2;border-radius:5px;overflow:hidden}
+.bar i{display:block;height:100%;background:#2f5bea}
+#status{margin-top:8px}#log{max-height:180px;overflow:auto;margin:0;font-size:.8rem;white-space:pre-wrap}
+#rag{width:100%;background:#fafbfe;border-radius:8px}.hint{font-size:.8rem;color:#556}
+.ea{stroke:#2e7d32;stroke-width:2}.er{stroke:#ef6c00;stroke-width:2;stroke-dasharray:5 4}
+.el{font-size:12px;font-weight:700;text-anchor:middle}
+.np{fill:#cfe0ff;stroke:#2f5bea;stroke-width:2}.np.dead{fill:#ffb3b3;stroke:#c62828}.np.gone{fill:#ddd;stroke:#999}
+.nr{fill:#fff3cd;stroke:#b8860b;stroke-width:2}.nt{font-size:13px;font-weight:700;text-anchor:middle}

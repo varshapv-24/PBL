@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Deadlock Simulation System</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header><h1>Deadlock Simulation System</h1><span id="badge" class="badge">NOT SET UP</span></header>
+<main>
+<section class="card"><h2>1. Setup</h2>
+  <label>Processes <input id="n" type="number" min="1" max="10" value="5"></label>
+  <label>Resources <input id="m" type="number" min="1" max="10" value="3"></label>
+  <button id="build">Build grids</button>
+  <button id="sample1">Load safe sample</button>
+  <button id="sample2">Load deadlock sample</button>
+  <div id="grids"></div>
+  <button id="apply" class="primary">Apply setup</button>
+</section>
+<section class="card"><h2>2. System state</h2><div id="tables"></div><div id="util"></div></section>
+<section class="card"><h2>3. Actions</h2>
+  <div class="row">Request: <select id="rp"></select> <span id="rv"></span>
+    <button id="req" class="primary">Request (Banker's)</button>
+    <button id="pend">Force pending (blocked)</button></div>
+  <div class="row"><button id="bank">Run Banker's</button> <button id="detect">Detect deadlock</button>
+    <button id="clearreq">Clear pending</button></div>
+  <div class="row">Recover:
+    <select id="mode"><option value="0">Terminate victim</option><option value="1">Preempt victim</option></select>
+    <button id="recover">Recover</button></div>
+  <div id="status"></div>
+</section>
+<section class="card"><h2>Four necessary conditions</h2><div id="cond"></div></section>
+<section class="card"><h2>4. Resource Allocation Graph</h2>
+  <div class="row"><button id="sprev">&#9664; Before</button><span id="steptxt"></span><button id="snext">After &#9654;</button></div>
+  <svg id="rag" viewBox="0 0 700 320"></svg>
+  <p class="hint"><b style="color:#2e7d32">Solid green</b>: resource allocated to process &nbsp; <b style="color:#ef6c00">Dashed orange</b>: process waiting for resource &nbsp; <b style="color:#c62828">Red process</b>: deadlocked</p>
+</section>
+<section class="card"><h2>Log</h2><pre id="log"></pre></section>
+</main>
+<script src="rag.js"></script><script src="panels.js"></script><script src="app.js"></script>
+</body></html>
