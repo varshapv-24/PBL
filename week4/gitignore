@@ -1,0 +1,4 @@
+server
+test_console
+test_edge
+*.o

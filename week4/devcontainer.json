@@ -1,0 +1,7 @@
+{
+  "name": "deadlock-sim",
+  "image": "mcr.microsoft.com/devcontainers/cpp:ubuntu-24.04",
+  "forwardPorts": [8080],
+  "portsAttributes": { "8080": { "label": "Deadlock Simulator", "onAutoForward": "openBrowser" } },
+  "postCreateCommand": "make server"
+}
