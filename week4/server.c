@@ -1,4 +1,4 @@
-/* OWNER: Member 2 - integration and backend */
+/* integration and backend */
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
@@ -171,9 +171,9 @@ static void respond(int fd, int code, const char *type, const char *body, size_t
 static void serve_file(int fd, const char *path) {
     char fn[300];
     if (strstr(path, "..")) { respond(fd, 404, "text/plain", "Not found", 9); return; }
-    const char *dirs[] = { "member3_ui", "member4_graph" };   /* where the web files live */
+    const char *dirs[] = { ".", "member3_ui", "member4_graph" };   /* where the web files live */
     FILE *f = NULL;
-    for (int k = 0; k < 2 && !f; k++) {
+    for (int k = 0; k < 3 && !f; k++) {
         snprintf(fn, sizeof fn, "%s%s%s", dirs[k], path, strcmp(path, "/") == 0 ? "index.html" : "");
         f = fopen(fn, "rb");
     }
