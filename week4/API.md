@@ -1,4 +1,4 @@
-# API contract (Member 2). Bodies are whitespace-separated integers; responses are JSON.
+# API contract . Bodies are whitespace-separated integers; responses are JSON.
 
 | Endpoint | Method | Body | Returns |
 |---|---|---|---|
