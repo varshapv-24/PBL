@@ -1,4 +1,4 @@
-# CPU Process Scheduling Simulator (Week 3)
+# CPU Process Scheduling Simulator 
 
 A menu-driven CPU scheduling simulator written in C. The user enters a set of
 processes, picks a scheduling algorithm, and the program prints a Gantt chart
@@ -198,15 +198,6 @@ Every algorithm has the same shape: it fills in each process's start and
 completion time and records the Gantt chart, without printing anything. The
 metrics and the printing are done in one place (`metrics.c`), so all algorithms
 are measured the same way.
-
-## Team
-
-| Member   | Name | Work |
-|----------|------|------|
-| Leader   |      | `scheduler.h`, `main.c`, `metrics.c`, `Makefile`, integration and testing |
-| Member 1 |      | FCFS, SJF, Priority (non-preemptive) |
-| Member 2 |      | SRTF, Priority (preemptive) |
-| Member 3 |      | Round Robin, Gantt chart display |
 
 ## Limits
 
