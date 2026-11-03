@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<!--
+  index.html
+  The graphical user interface. It sends the input to the C server
+  (GET /simulate?...) and draws the JSON that comes back:
+  step-by-step table, summary, comparison table and a fault chart.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Page Replacement Simulator</title>
+<style>
+  :root {
+    --bg: #eef1f5;
+    --panel: #ffffff;
+    --ink: #14213d;
+    --muted: #5b6577;
+    --line: #d5dbe5;
+    --hit: #1f7a5a;
+    --hit-bg: #dff3ea;
+    --fault: #b93a28;
+    --fault-bg: #fbe3df;
+    --accent: #2b4c9b;
+    --load: #fff0b8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1623;
+      --panel: #19233a;
+      --ink: #e8edf7;
+      --muted: #9aa6bd;
+      --line: #2c3a58;
+      --hit: #5fd0a2;
+      --hit-bg: #17372e;
+      --fault: #ff8a76;
+      --fault-bg: #40201c;
+      --accent: #8fb0ff;
+      --load: #5a4a10;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.5 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  }
+  header { padding: 28px 24px 8px; max-width: 1180px; margin: 0 auto; }
+  h1 { margin: 0 0 4px; font-size: 1.7rem; letter-spacing: -0.01em; }
+  header p { margin: 0; color: var(--muted); max-width: 62ch; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 16px 24px 48px;
+    align-items: start;
+  }
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .controls { position: sticky; top: 16px; }
+  @media (max-width: 860px) { .controls { position: static; } }
+
+  label, legend { display: block; font-weight: 600; margin-bottom: 6px; }
+  .hint { color: var(--muted); font-size: 0.88rem; margin: 4px 0 0; }
+  textarea, input[type=number] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--ink);
+    font: inherit;
+  }
+  textarea { resize: vertical; min-height: 84px; font-variant-numeric: tabular-nums; }
+  textarea:focus, input:focus, button:focus-visible, .radio:focus-within {
+    outline: 3px solid var(--accent);
+    outline-offset: 1px;
+  }
+  .field { margin-bottom: 18px; }
+  fieldset { border: 0; padding: 0; margin: 0 0 20px; }
+  .radio {
+    display: flex; gap: 10px; align-items: center;
+    padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px;
+    margin-bottom: 6px; cursor: pointer;
+  }
+  .radio input { accent-color: var(--accent); }
+  .row { display: flex; gap: 8px; margin-top: 8px; }
+  button {
+    font: inherit; cursor: pointer; border-radius: 6px; padding: 10px 14px;
+    border: 1px solid var(--line); background: transparent; color: var(--ink);
+  }
+  button.primary {
+    width: 100%; background: var(--accent); border-color: var(--accent);
+    color: #fff; font-weight: 600;
+  }
+  @media (prefers-color-scheme: dark) { button.primary { color: #0f1623; } }
+  button.small { padding: 6px 10px; font-size: 0.88rem; }
+  button:hover { filter: brightness(0.95); }
+
+  #error {
+    display: none; margin-top: 14px; padding: 10px 12px; border-radius: 6px;
+    background: var(--fault-bg); color: var(--fault); font-weight: 600;
+  }
+
+  .empty { color: var(--muted); }
+  .empty h2 { margin-top: 0; color: var(--ink); }
+
+  .results > section + section { margin-top: 24px; }
+  h2 { margin: 0 0 12px; font-size: 1.25rem; }
+  h3 { margin: 0 0 10px; font-size: 1.05rem; }
+
+  .verdict {
+    border-left: 5px solid var(--hit); background: var(--hit-bg);
+    padding: 12px 16px; border-radius: 6px; margin-bottom: 20px; font-size: 1.05rem;
+  }
+
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+  th, td { padding: 8px 12px; text-align: center; border-bottom: 1px solid var(--line); }
+  th { font-weight: 600; color: var(--muted); }
+  td.left, th.left { text-align: left; }
+  td.frame { min-width: 56px; }
+  td.loaded { background: var(--load); font-weight: 700; }
+  td.empty-cell { color: var(--muted); }
+  .evicted { color: var(--fault); font-size: 0.78rem; margin-left: 6px; text-decoration: line-through; }
+  .status { font-weight: 700; border-radius: 4px; padding: 2px 10px; display: inline-block; }
+  .status.hit { color: var(--hit); background: var(--hit-bg); }
+  .status.fault { color: var(--fault); background: var(--fault-bg); }
+  tr.best-row td { font-weight: 700; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 14px; }
+  .stat { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  .stat b { display: block; font-size: 1.4rem; font-variant-numeric: tabular-nums; }
+  .stat span { color: var(--muted); font-size: 0.88rem; }
+
+  .bars { display: grid; gap: 10px; }
+  .bar-row { display: grid; grid-template-columns: 80px 1fr 90px; align-items: center; gap: 10px; }
+  .bar-track { background: var(--bg); border-radius: 4px; height: 26px; overflow: hidden; }
+  .bar { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.4s ease; }
+  .bar.best { background: var(--hit); }
+  .bar-value { font-variant-numeric: tabular-nums; color: var(--muted); }
+  .legend { color: var(--muted); font-size: 0.88rem; margin-top: 10px; }
+  @media (prefers-reduced-motion: reduce) { .bar { transition: none; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Page Replacement Simulator</h1>
+  <p>Enter a page-reference string and a frame count, then watch how FIFO, LRU and Optimal fill and replace memory.</p>
+</header>
+
+<div class="layout">
+
+  <!-- ============ INPUT PANEL ============ -->
+  <form class="panel controls" id="form" autocomplete="off">
+    <div class="field">
+      <label for="refs">Page-reference string</label>
+      <textarea id="refs" spellcheck="false">7 0 1 2 0 3 0 4 2 3</textarea>
+      <p class="hint">Whole numbers 0&ndash;9999, separated by spaces or commas (up to 200).</p>
+      <div class="row">
+        <button type="button" class="small" id="sample">Use sample</button>
+        <button type="button" class="small" id="random">Random string</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="frames">Number of page frames</label>
+      <input type="number" id="frames" value="3" min="1" max="10">
+      <p class="hint">Between 1 and 10.</p>
+    </div>
+
+    <fieldset>
+      <legend>Algorithm</legend>
+      <label class="radio"><input type="radio" name="algo" value="fifo"> FIFO</label>
+      <label class="radio"><input type="radio" name="algo" value="lru"> LRU</label>
+      <label class="radio"><input type="radio" name="algo" value="optimal"> Optimal</label>
+      <label class="radio"><input type="radio" name="algo" value="all" checked> Compare all algorithms</label>
+    </fieldset>
+
+    <button type="submit" class="primary">Run simulation</button>
+    <div id="error" role="alert"></div>
+  </form>
+
+  <!-- ============ RESULTS ============ -->
+  <main class="results" id="results" aria-live="polite">
+    <div class="panel empty">
+      <h2>No simulation yet</h2>
+      <p>Press <b>Run simulation</b>. The sample string with 3 frames is already filled in.</p>
+    </div>
+  </main>
+
+</div>
+
+<script>
+const form = document.getElementById('form');
+const results = document.getElementById('results');
+const errorBox = document.getElementById('error');
+
+document.getElementById('sample').onclick = () => {
+  document.getElementById('refs').value = '7 0 1 2 0 3 0 4 2 3 0 3 2 1 2 0 1 7 0 1';
+  document.getElementById('frames').value = 3;
+};
+document.getElementById('random').onclick = () => {
+  const out = [];
+  for (let i = 0; i < 20; i++) out.push(Math.floor(Math.random() * 8));
+  document.getElementById('refs').value = out.join(' ');
+};
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  errorBox.style.display = 'none';
+
+  const params = new URLSearchParams({
+    refs: document.getElementById('refs').value,
+    frames: document.getElementById('frames').value,
+    algo: form.elements.algo.value
+  });
+
+  let data;
+  try {
+    const res = await fetch('/simulate?' + params.toString());
+    data = await res.json();
+  } catch (err) {
+    showError('Cannot reach the C server. Is ./pagesim still running?');
+    return;
+  }
+  if (!data.ok) { showError(data.error); return; }
+  render(data);
+});
+
+function showError(msg) {
+  errorBox.textContent = msg;
+  errorBox.style.display = 'block';
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+/* Step-by-step table: the frame that just changed is highlighted. */
+function stepTable(r) {
+  let head = '<th>Page</th>';
+  for (let f = 1; f <= r.frames; f++) head += '<th>Frame ' + f + '</th>';
+  head += '<th>Status</th>';
+
+  let prev = new Array(r.frames).fill(-1);
+  let rows = '';
+  r.steps.forEach(s => {
+    let cells = '<td><b>' + s.page + '</b></td>';
+    s.frames.forEach((v, i) => {
+      const changed = !s.hit && v !== prev[i];
+      const text = v === -1 ? '&mdash;' : v;
+      const cls = 'frame' + (changed ? ' loaded' : '') + (v === -1 ? ' empty-cell' : '');
+      const gone = (changed && s.replaced !== -1)
+        ? '<span class="evicted" title="Page replaced">' + s.replaced + '</span>' : '';
+      cells += '<td class="' + cls + '">' + text + gone + '</td>';
+    });
+    cells += '<td><span class="status ' + (s.hit ? 'hit' : 'fault') + '">' +
+             (s.hit ? 'Hit' : 'Fault') + '</span></td>';
+    rows += '<tr>' + cells + '</tr>';
+    prev = s.frames;
+  });
+  return '<div class="scroll"><table><thead><tr>' + head + '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
+         '<p class="legend">Highlighted cell: the page just loaded. Struck-through number: the page it replaced.</p>';
+}
+
+function summary(r) {
+  return '<div class="stats">' +
+    stat(r.total, 'Total page references') +
+    stat(r.hits, 'Page hits') +
+    stat(r.faults, 'Page faults') +
+    stat(r.hitRatio.toFixed(1) + '%', 'Page hit ratio') +
+    stat(r.faultRatio.toFixed(1) + '%', 'Page fault ratio') +
+    '</div>';
+}
+function stat(v, label) { return '<div class="stat"><b>' + v + '</b><span>' + label + '</span></div>'; }
+
+function comparison(data) {
+  const list = data.results;
+  const min = Math.min(...list.map(r => r.faults));
+  const max = Math.max(...list.map(r => r.faults), 1);
+
+  let rows = list.map(r =>
+    '<tr class="' + (r.faults === min ? 'best-row' : '') + '"><td class="left">' + esc(r.name) + '</td>' +
+    '<td>' + r.hits + '</td><td>' + r.faults + '</td>' +
+    '<td>' + r.hitRatio.toFixed(1) + '%</td><td>' + r.faultRatio.toFixed(1) + '%</td></tr>'
+  ).join('');
+
+  let bars = list.map(r =>
+    '<div class="bar-row"><span>' + esc(r.name) + '</span>' +
+    '<div class="bar-track"><div class="bar ' + (r.faults === min ? 'best' : '') +
+    '" style="width:' + (r.faults / max * 100) + '%"></div></div>' +
+    '<span class="bar-value">' + r.faults + ' faults</span></div>'
+  ).join('');
+
+  return '<section class="panel"><h2>Algorithm comparison</h2>' +
+    '<div class="verdict">Fewest page faults: <b>' + esc(data.best) + '</b> (' + min + ' of ' + list[0].total + ' references)</div>' +
+    '<div class="scroll"><table><thead><tr><th class="left">Algorithm</th><th>Page hits</th><th>Page faults</th>' +
+    '<th>Hit ratio</th><th>Fault ratio</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+    '<h3 style="margin-top:22px">Page faults per algorithm</h3><div class="bars">' + bars + '</div>' +
+    '<p class="legend">Green bar: fewest faults. Shorter is better.</p></section>';
+}
+
+function render(data) {
+  let html = '';
+  if (data.results.length > 1) html += comparison(data);
+  data.results.forEach(r => {
+    html += '<section class="panel"><h2>' + esc(r.name) + ' &ndash; step by step (' + r.frames + ' frames)</h2>' +
+            stepTable(r) + summary(r) + '</section>';
+  });
+  results.innerHTML = html;
+}
+</script>
+</body>
+</html>
