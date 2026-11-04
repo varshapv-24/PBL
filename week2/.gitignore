@@ -1,7 +1,0 @@
-core
-logger
-ui
-*.o
-cpu_log.txt
-error_log.txt
-
