@@ -1,4 +1,4 @@
-/* cpu.h - tiny CPU / memory / stack / queue model (Student 2's area).
+/* cpu.h - tiny CPU / memory / stack / queue model 
  * Used by core.c (multi-process) AND bench.c (single-process baseline),
  * so the benchmark compares identical simulator logic.
  * REPLACE this with your real simulator logic.
