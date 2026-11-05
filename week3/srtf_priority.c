@@ -147,3 +147,6 @@ void priority_p(Process p[], int n, GanttChart *g)
 {
     run_preemptive(p, n, g, MODE_PRIORITY);
 }
+
+
+
