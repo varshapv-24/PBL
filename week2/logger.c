@@ -1,7 +1,7 @@
 /* logger.c - LOGGING PROCESS
  * Receives log messages from Core through a POSIX message queue and
  * writes them to sim.log. Errors are also echoed to stderr.
- * Start this FIRST.
+ * start this first
  */
 #define _GNU_SOURCE
 #include <stdio.h>
